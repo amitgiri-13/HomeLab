@@ -1,0 +1,66 @@
+kind: StorageClass
+apiVersion: storage.k8s.io/v1
+metadata:
+  name: home-lab-storage
+  annotations:
+    description: "Local atorage for home-lab"
+provisioner: kubernetes.io/no-provisioner
+volumeBindingMode: WaitForFirstConsumer
+reclaimPolicy: Delete 
+allowVolumeExpansion: false 
+mountOptions:
+  - rw 
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: jenkins-pv-volume
+  labels:
+    type: local-storage
+  annotations:
+    description: "pv for jenkins home-lab"
+  finalizers:
+    - kubernetes.io/pv-protection
+spec:
+  storageClassName: home-lab-storage
+  claimRef:
+    name: jenkins-pv-claim
+    namespace: jenkins-local
+  capacity:
+    storage: 10Gi
+  accessModes:
+    - ReadWriteOnce
+  local:
+    path: /mnt/jenkins
+  volumeMode: Filesystem
+  persistentVolumeReclaimPolicy: Delete
+  mountOptions:
+    - rw
+  nodeAffinity:
+    required:
+      nodeSelectorTerms:
+      - matchExpressions:
+        - key: kubernetes.io/hostname
+          operator: In
+          values:
+          - minikube
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: jenkins-pv-claim
+  namespace: jenkins-local
+  labels:
+    type: local-storage
+  annotations:
+    description: "pvc for jenkins home-lab"
+  finalizers:
+    - kubernetes.io/pvc-protection
+spec:
+  storageClassName: home-lab-storage
+  volumeMode: Filesystem
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 3Gi
