@@ -1,0 +1,17 @@
+#!/bin/bash
+
+echo "validating YAML..."
+
+FILES=$(git diff --cached --name-only --diff-filter=ACM | grep -E "\.ya?ml$")
+
+for file in $FILES
+do
+    kubectl apply --dry-run=client -f "$file" > /dev/null
+    if [ $? -ne 0 ]
+    then    
+        echo "kubernetes validation failed: $file"
+        exit 1
+    fi
+done
+
+echo "YAML validation passed"
