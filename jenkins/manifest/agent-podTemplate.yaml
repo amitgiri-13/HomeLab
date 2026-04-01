@@ -1,0 +1,28 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: fastapi-docker-builder
+  labels:
+    role: jenkins-agent
+spec:
+  containers:
+    - name: jnlp
+      image: jenkins/inbound-agent:latest
+      args: ['$(JENKINS_SECRET)', '$(JENKINS_NAME)']
+      resources:
+        limits:
+          memory: "1Gi"
+          cpu: "500m"
+
+    - name: docker
+      image: docker:24.0.5-dind
+      securityContext:
+        privileged: true
+      volumeMounts:
+        - name: docker-graph-storage
+          mountPath: /var/lib/docker
+
+  restartPolicy: Never
+  volumes:
+    - name: docker-graph-storage
+      emptyDir: {}
