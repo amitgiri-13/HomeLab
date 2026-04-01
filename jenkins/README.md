@@ -43,7 +43,9 @@ Jenkins runs fully in jenkins-local namespace, with persistent storage, dynamic 
 ## **Installation Guides**
 
 1. **[Setup Jenkins](./jenkinsSetup.md)**
-2. **[Fix Broken Reverse Proxy](./fixReverseProxy.md)**
+2. **[Jenkins Manifest](./manifest/)**
+3. **[Fix Broken Reverse Proxy](./fixReverseProxy.md)**
+4. **[Setup Kubernetes Cloud](./cloudsSetup.md)**
 
 ---
 ## **Usage**
