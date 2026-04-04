@@ -34,7 +34,7 @@ rules:
     verbs: ["get"]
   - apiGroups: [""]
     resources: ["pods/exec"]
-    verbs: ["create"]
+    verbs: ["create","get"]
   - apiGroups: [""]
     resources: ["secrets"]
     verbs: ["list", "get"]
