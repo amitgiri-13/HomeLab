@@ -36,7 +36,10 @@ pipeline {
   stages {
 
     stage('Checkout') {
-      agent any
+      agent {
+        kubernetes {
+          yaml readFile(params.POD_TEMPLATE)   
+        }
       steps {
         git(
           url: params.GIT_REPO,
@@ -45,13 +48,6 @@ pipeline {
         )
       }
     }
-
-    stage('Build & Push') {
-      agent {
-        kubernetes {
-          yaml readFile(params.POD_TEMPLATE)   
-        }
-      }
 
       environment {
         IMAGE_TAG    = "${env.BUILD_NUMBER}"
