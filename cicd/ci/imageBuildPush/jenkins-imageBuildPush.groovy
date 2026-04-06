@@ -1,7 +1,7 @@
 pipeline {
   agent {
     kubernetes {
-      yamlFile 'jenkins-kanikoAgentPodTemplate.yaml'
+      yamlFile 'cicd/ci/imageBuildPush/jenkins-kanikoAgentPodTemplate.yaml'
     }
   }
 
