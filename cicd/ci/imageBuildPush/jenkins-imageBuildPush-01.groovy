@@ -23,7 +23,11 @@ def buildAndPushImage(config) {
 
 
 pipeline {
-  agent none  
+  
+  agent {
+        kubernetes {
+          yaml readFile(params.POD_TEMPLATE)   
+        }
 
   parameters {
     string(name: 'GIT_REPO', defaultValue: 'https://github.com/amitgiri-13/HabitTracker.git')
@@ -36,10 +40,6 @@ pipeline {
   stages {
 
     stage('Checkout') {
-      agent {
-        kubernetes {
-          yaml readFile(params.POD_TEMPLATE)   
-        }
       steps {
         git(
           url: params.GIT_REPO,
