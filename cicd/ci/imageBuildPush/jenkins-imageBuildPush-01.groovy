@@ -78,14 +78,12 @@ pipeline {
   }
 
   post {
-    success {
-      echo "Image pushed: ${env.FULL_IMAGE}"
-    }
-    failure {
-      echo "Pipeline failed"
-    }
-    always {
-      cleanWs()
+  always {
+    script {
+      node {
+        cleanWs()
+      }
     }
   }
+}
 }
