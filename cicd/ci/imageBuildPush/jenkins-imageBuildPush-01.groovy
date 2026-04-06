@@ -91,6 +91,9 @@ pipeline {
         failure {
           echo "ERROR: Kaniko build/push failed for image: ${env.FULL_IMAGE}"
         }
+        always {
+          cleanWs()
+        }
       }
     }
   }
@@ -123,8 +126,7 @@ pipeline {
       echo "WARNING: Build #${env.BUILD_NUMBER} was manually aborted."
     }
     always {
-      echo "==> Pipeline finished. Cleaning workspace..."
-      cleanWs()
+      echo "==> Pipeline finished."
     }
   }
 }
