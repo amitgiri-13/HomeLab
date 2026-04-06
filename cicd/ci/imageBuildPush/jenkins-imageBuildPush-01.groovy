@@ -1,3 +1,6 @@
+
+def POD_YAML = ''
+
 def buildAndPushImage(config) {
   container(name: 'kaniko', shell: '/busybox/sh') {
     sh """#!/busybox/sh
@@ -19,11 +22,7 @@ def buildAndPushImage(config) {
 }
 
 pipeline {
-  agent {
-    kubernetes {
-      yaml readFile(params.POD_TEMPLATE)
-    }
-  }
+  agent none  
 
   parameters {
     string(name: 'GIT_REPO',        defaultValue: 'https://github.com/amitgiri-13/HabitTracker.git')
@@ -40,7 +39,22 @@ pipeline {
   }
 
   stages {
+  
+    stage('Prepare Agent') {
+      agent { label 'built-in' }  
+      steps {
+        script {
+          POD_YAML = readTrusted(params.POD_TEMPLATE) 
+        }
+      }
+    }
+
     stage('Checkout') {
+      agent {
+        kubernetes {
+          yaml POD_YAML
+        }
+      }
       steps {
         git(
           url:           params.GIT_REPO,
@@ -56,6 +70,11 @@ pipeline {
     }
 
     stage('Validate Dockerfile') {
+      agent {
+        kubernetes {
+          yaml POD_YAML
+        }
+      }
       steps {
         sh """
           echo "==> Checking Dockerfile..."
@@ -74,6 +93,11 @@ pipeline {
     }
 
     stage('Kaniko Build') {
+      agent {
+        kubernetes {
+          yaml POD_YAML
+        }
+      }
       steps {
         script {
           buildAndPushImage([
