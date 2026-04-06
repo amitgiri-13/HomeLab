@@ -1,5 +1,4 @@
 def buildAndPushImage(config) {
-
   container(name: 'kaniko', shell: '/busybox/sh') {
     sh """#!/busybox/sh
       echo "==> Building image: ${config.fullImage}"
@@ -21,13 +20,12 @@ def buildAndPushImage(config) {
   }
 }
 
-
 pipeline {
-  
   agent {
-        kubernetes {
-          yaml readFile(params.POD_TEMPLATE)   
-        }
+    kubernetes {
+      yaml readFile(params.POD_TEMPLATE)
+    }
+  }
 
   parameters {
     string(name: 'GIT_REPO', defaultValue: 'https://github.com/amitgiri-13/HabitTracker.git')
@@ -37,8 +35,13 @@ pipeline {
     string(name: 'POD_TEMPLATE', defaultValue: 'cicd/ci/imageBuildPush/jenkins-kanikoAgentPodTemplate.yaml')
   }
 
-  stages {
+  environment {
+    IMAGE_TAG    = "${env.BUILD_NUMBER}"
+    FULL_IMAGE   = "${params.IMAGE_NAME}:${IMAGE_TAG}"
+    LATEST_IMAGE = "${params.IMAGE_NAME}:latest"
+  }
 
+  stages {
     stage('Checkout') {
       steps {
         git(
@@ -49,38 +52,27 @@ pipeline {
       }
     }
 
-      environment {
-        IMAGE_TAG    = "${env.BUILD_NUMBER}"
-        FULL_IMAGE   = "${params.IMAGE_NAME}:${IMAGE_TAG}"
-        LATEST_IMAGE = "${params.IMAGE_NAME}:latest"
+    stage('Validate Dockerfile') {
+      steps {
+        sh """
+          echo "==> Checking Dockerfile..."
+          if [ ! -f ${params.DOCKERFILE_PATH} ]; then
+            echo "ERROR: Dockerfile not found!"
+            exit 1
+          fi
+        """
       }
+    }
 
-      stages {
-
-        stage('Validate Dockerfile') {
-          steps {
-            sh """
-              echo "==> Checking Dockerfile..."
-              if [ ! -f ${params.DOCKERFILE_PATH} ]; then
-                echo "ERROR: Dockerfile not found!"
-                exit 1
-              fi
-            """
-          }
+    stage('Kaniko Build') {
+      steps {
+        script {
+          buildAndPushImage([
+            dockerfile : params.DOCKERFILE_PATH,
+            fullImage  : env.FULL_IMAGE,
+            latestImage: env.LATEST_IMAGE
+          ])
         }
-
-        stage('Kaniko Build') {
-          steps {
-            script {
-              buildAndPushImage([
-                dockerfile : params.DOCKERFILE_PATH,
-                fullImage  : env.FULL_IMAGE,
-                latestImage: env.LATEST_IMAGE
-              ])
-            }
-          }
-        }
-
       }
     }
   }
